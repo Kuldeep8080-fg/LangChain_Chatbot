@@ -264,6 +264,49 @@ def show_chat_page():
              
         add_message(st.session_state.current_conversation_id, "user", prompt)
         
+        # FEATURE: "Give me all last asked questions" (Local Handler)
+        # Check for various natural language triggers
+        prompt_lower = prompt.lower()
+        triggers = [
+            "give me all last asked questions",
+            "what was my last question",
+            "what were my last questions",
+            "show my previous questions",
+            "history of my questions"
+        ]
+        
+        if any(trigger in prompt_lower for trigger in triggers):
+            with st.chat_message("assistant"):
+                # Extract user questions from current session state
+                user_questions = [m["content"] for m in st.session_state.messages if m["role"] == "user"]
+                
+                # Exclude the current question itself (last one)
+                user_questions = user_questions[:-1]
+                
+                if user_questions:
+                    response = "**Here are the questions you asked in this chat:**\n\n"
+                    for i, q in enumerate(user_questions, 1):
+                        response += f"{i}. {q}\n"
+                else:
+                    response = "You haven't asked any other questions in this chat yet."
+                
+                st.markdown(response)
+                
+            # Save to DB and Session
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": response,
+                "timestamp": datetime.now()
+            })
+            add_message(st.session_state.current_conversation_id, "assistant", response)
+            
+            # Update Title if needed
+            if len(st.session_state.messages) == 2:
+                new_title = generate_title(prompt)
+                update_conversation_title(st.session_state.current_conversation_id, new_title)
+            
+            st.rerun()
+
         # 2. Get AI Response
         with st.chat_message("assistant"):
             # Prepare history for RAG

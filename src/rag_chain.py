@@ -45,7 +45,7 @@ CONTEXT FROM DOCUMENTATION:
 {context}
 
 
-CHAT HISTORY (Previous context - IGNORE if unrelated to new question):
+CHAT HISTORY (Use this for context if the user says "continue", "explain more", or refers to previous messages):
 {chat_history}
 
 LATEST USER QUESTION (Focus your answer here):
@@ -56,8 +56,8 @@ LATEST USER QUESTION (Focus your answer here):
     - Uses analogies if helpful.
     - Provide a detailed answer that teaches    - The user wants a detailed, comprehensive answer.
     - If the "Context" is just a code snippet (like a specific function), you MUST first define the general concept using your own knowledge, then explain how the code relates to it.
-    - If the answer is completely missing from the context and you cannot infer it, say "I don't have information about that in my specific documentation, but generally speaking..." and provide a helpful answer based on your training.
-    - Do NOT hallucinate specific library features that don't exist. Use your general knowledge only if you are 100% sure."""
+    - If the answer is completely missing from the context, say "I don't have information about that in my specific documentation." and STOP. Do not try to answer from general knowledge.
+    - Do NOT hallucinate specific library features that don't exist."""
 
 
 def format_docs(docs):
@@ -170,7 +170,7 @@ def create_rag_chain(vectorstore=None):
     
     llm = ChatGroq(
         model=model_name,
-        temperature=0.1,  # Reduced temperature for more factual answers
+        temperature=0,  # Reduced temperature for more factual answers
         api_key=api_key
     )
     
